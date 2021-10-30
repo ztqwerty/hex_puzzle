@@ -25,6 +25,9 @@ class Hex_Piece:
             self.form_1.append(libhex.hex_rotate_left(libhex.hex_rotate_left(hex)))
             self.form_2.append(libhex.hex_rotate_right(libhex.hex_rotate_right(hex)))
 
+    def form(self, form_idx):
+        return getattr(self, 'form_' + str(form_idx))
+
 
 def generate_all_pieces():
     Puzzle_pieces = []
