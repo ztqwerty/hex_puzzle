@@ -3,6 +3,7 @@ import libhex
 
 # Number of hex per Hex_Piece
 NUM_OF_HEX_PER_PIECE = 5
+NUM_OF_PIECES = 12
 
 
 class Hex_Piece:
