@@ -31,6 +31,16 @@ def Hex_generate_map(map_size):
 
 
 # Toggle grid value if found 
+def Hex_find_grid(Map, q, r, s):
+    for i in range(len(Map)):
+        grid = Map[i]
+        hex = grid.hex
+        if hex.q == q and hex.r == r and hex.s == s:
+            return True, grid.val 
+    return False, 0
+
+
+# Toggle grid value if found 
 def Hex_find_and_set_grid_conditional(Map, q, r, s, new_val):
     val_set_success = False
     found_match = False
@@ -46,8 +56,60 @@ def Hex_find_and_set_grid_conditional(Map, q, r, s, new_val):
     return found_match, val_set_success
 
 
-_hex_global_ctr = 0
+def Hex_reachable(Map, hex_start, movement):
+    Map_copy = Map.copy()
+    # add start to visited
+    fringes = [] # array of arrays of hexes
+    Hex_find_and_set_grid_conditional(Map_copy, hex_start.q, hex_start.r, hex_start.s, 1)
+    fringes.append([hex_start])
+    cavity_num = 1 # hex start is the first cavity
 
+    for k in range(1, movement):
+        fringes.append([])
+        for hex in fringes[k-1]:
+            for dir in range(6):
+                hex_neighbor = libhex.hex_neighbor(hex, dir)
+                found_match, val_set_success = Hex_find_and_set_grid_conditional(Map_copy, hex_neighbor.q, hex_neighbor.r, hex_neighbor.s, 1)
+                if found_match and val_set_success:
+                # if neighbor not in visited and not blocked:
+                    #add neighbor to visited
+                    fringes[k].append(hex_neighbor)
+                    cavity_num = cavity_num + 1
+
+    return fringes, cavity_num
+
+
+def Hex_check_if_all_remaining_hex_good(Map):
+    t0 = time.time()
+    for grid in Map:
+        if grid.val == 0:
+            neighbor_ctr = 0
+            for dir in range(6):
+                hex_neighbor = libhex.hex_neighbor(grid.hex, dir)
+                result, val = Hex_find_grid(Map, hex_neighbor.q, hex_neighbor.r, hex_neighbor.s)
+                if (val == 1) or not result:
+                    neighbor_ctr = neighbor_ctr + 1
+            # print(grid, neighbor_ctr)
+
+            if (neighbor_ctr == 6):
+                return False
+            if (neighbor_ctr >= 4):
+                fringes, cavity_num = Hex_reachable(Map, grid.hex, 10)
+                # print(fringes, cavity_num)
+                if cavity_num < 5:
+                    return False
+                if cavity_num > 5 and cavity_num < 10:
+                    return False
+            # if (neighbor_ctr == 4):
+            #     fringes, cavity_num = Hex_reachable(Map, grid.hex, )
+            #     if cavity_num < 5:
+            #         return False
+    # print("Time elapsed - Hex_check_if_all_remaininng_hex_good:", time.time()-t0)
+
+    return True
+
+
+_hex_global_ctr = 0
 def Hex_verify_candi_with_level(Map_copy, Puzzle_pieces, Candi):
     if Candi:
         level = len(Candi)
@@ -65,14 +127,19 @@ def Hex_verify_candi_with_level(Map_copy, Puzzle_pieces, Candi):
             Candi_next = [level, j, q_offset, r_offset, s_offset]
             result, Map_out, Candi_out = Hex_verify_candi_with_next_level(Map_copy, Puzzle_pieces, Candi, Candi_next)
             if result:
-                # print(result, Candi_out)
-                global _hex_global_ctr
-                _hex_global_ctr = _hex_global_ctr + 1
-                if _hex_global_ctr % 50 == 0:
-                    Hex_plot_current_candi(Hex_Map_Original_Copy, pin_hex, Candi_out)
                 if len(Candi_out) != hex_pieces.NUM_OF_PIECES:
+                    # if the current solution is bad with impossible vacant grids to fill, skip and continue
+                    if not Hex_check_if_all_remaining_hex_good(Map_out):
+                        continue
+                    global _hex_global_ctr
+                    _hex_global_ctr = _hex_global_ctr + 1
+                    if _hex_global_ctr % 50 == 0:
+                        print(_hex_global_ctr, result, Candi_out)
+                        Hex_plot_current_candi(Hex_Map_Original_Copy, pin_hex, Candi_out)
                     Hex_verify_candi_with_level(Map_out, Puzzle_pieces, Candi_out)
                 else:
+                    # Found a solution! Return it
+                    Hex_plot_current_candi(Hex_Map_Original_Copy, pin_hex, Candi_out)
                     print("Found a solution:", Candi_out)
                     return Candi_out
 
@@ -80,6 +147,7 @@ def Hex_verify_candi_with_level(Map_copy, Puzzle_pieces, Candi):
 # Verify whether a new piece (defined by Candi_next) can fit in a map status
 # Return success/fail with updated map and candi
 def Hex_verify_candi_with_next_level(Map_copy, Puzzle_pieces, Candi_old, Candi_next):
+    t0 = time.time()
     Map_test = Map_copy.copy()
     this_piece = Puzzle_pieces[Candi_next[0]]
     this_piece_form = this_piece.form(Candi_next[1])
@@ -101,11 +169,13 @@ def Hex_verify_candi_with_next_level(Map_copy, Puzzle_pieces, Candi_old, Candi_n
         Candi_new.append(Candi_next)
     else:
         Candi_new = [Candi_next]
-    # print(Candi_old, Candi_new, Candi_next)
+
+    # print("Time elapsed - Hex_verify_candi_with_next_level:", time.time()-t0)
     return True, Map_test, Candi_new
 
 
 def Hex_plot_current_candi(Hex_Map, pin_hex, Sol_candi):
+    t0 = time.time()
     if not Sol_candi:
         return
 
@@ -155,6 +225,8 @@ def Hex_plot_current_candi(Hex_Map, pin_hex, Sol_candi):
     plt.ion()
     plt.show(block = False)
     plt.pause(0.001)
+
+    #print("Time elapsed - Hex_plot_current_candi:", time.time()-t0)
 
 
 ## Set problem
