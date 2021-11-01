@@ -1,5 +1,5 @@
 # Escher Cubes Solver
-Auther: Tong Zhang (ztqwerty)
+Auther: Tong Zhang (ztqwerty)  
 Date: Nov.1, 2021
 
 ### Intro
@@ -13,8 +13,11 @@ To run the solver:
 >> python hexagon_puzzle.py
 ```
 
-- The solving screenshot should be something like this:
-<iframe src="https://streamable.com/e/lcvhu4" width="560" height="440" frameborder="0" allowfullscreen></iframe>
+- The solving screenshot should be something like this:  
+
+https://user-images.githubusercontent.com/782663/139685538-9b7012a2-64fd-41e0-a543-fd7a9e7d4e83.mp4
+
+
 
 ### Tips
 - The location of the pin hex can be set like:
