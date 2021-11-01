@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
-from matplotlib.patches import RegularPolygon
+from matplotlib.patches import RegularPolygon, Polygon
 import numpy as np
 from typing import NamedTuple
 import time
+import math
 
 import libhex, hex_pieces
 
@@ -108,9 +109,9 @@ def Hex_verify_candi_with_level(Map_copy, Puzzle_pieces, Candi):
                         continue
                     global _hex_global_ctr
                     _hex_global_ctr = _hex_global_ctr + 1
-                    if _hex_global_ctr % 100 == 0:
-                        print(_hex_global_ctr)
-                        Hex_plot_current_candi(Hex_Map_Original_Copy, pin_hex, Candi_out)
+                    # if _hex_global_ctr % 50 == 0:
+                        # print(_hex_global_ctr)
+                        # Hex_plot_current_candi(Hex_Map_Original_Copy, pin_hex, Candi_out)
                     Hex_verify_candi_with_level(Map_out, Puzzle_pieces, Candi_out)
                 else:
                     # Found a solution! Return it
@@ -149,31 +150,43 @@ def Hex_verify_candi_with_next_level(Map_copy, Puzzle_pieces, Candi_old, Candi_n
     return True, Map_test, Candi_new
 
 
+def Hex_plot_cube_edges(x, y):
+    plt.plot(x + 0.75*np.array([0, 0]), y + 0.75*np.array([0, -1]), 'k', alpha=0.3)
+    plt.plot(x + 0.75*np.array([0, math.sqrt(3)/2]), y + 0.75*np.array([0, 0.5]), 'k', alpha=0.3)
+    plt.plot(x + 0.75*np.array([0, -math.sqrt(3)/2]), y + 0.75*np.array([0, 0.5]), 'k', alpha=0.3)
+
+
 def Hex_plot_current_candi(Hex_Map, pin_hex, Sol_candi):
     t0 = time.time()
     if not Sol_candi:
         return
 
+    flag_show_number = False
+
     plt.close()
     fig, ax = plt.subplots(1)
     ax.set_aspect('equal')
+
+    cube_array = 0.75 * np.array([[-math.sqrt(3)/2, 0], [-math.sqrt(3)/2, 0.5], [-math.sqrt(3)/4, 0.75], [0, 0.5], 
+                                [math.sqrt(3)/4, 0.75], [math.sqrt(3)/2, 0.5], [math.sqrt(3)/2, 0], [math.sqrt(3)/4, -0.25], 
+                                [math.sqrt(3)/4, -0.75], [0, -1], [-math.sqrt(3)/4, -0.75], [-math.sqrt(3)/4, -0.25]])
 
     for grid in Hex_Map:
         hex = grid.hex
         x = hex.q
         y = 2. * np.sin(np.radians(60)) * (hex.r - hex.s) /3.
-        hex = RegularPolygon((x, y), numVertices=6, radius=2. / 3., 
-                            orientation=np.radians(30), 
-                            facecolor='orange', alpha=0.2, edgecolor='k')
-        ax.add_patch(hex)
+        cube = Polygon([x, y] + cube_array, closed=True, 
+                    facecolor='orange', alpha=0.2, edgecolor='None')
+        ax.add_patch(cube)
 
     # Plot pin hex
     x = pin_hex.q
     y = 2. * np.sin(np.radians(60)) * (pin_hex.r - pin_hex.s) /3.
-    hex = RegularPolygon((x, y), numVertices=6, radius=2. / 3., 
-                            orientation=np.radians(30), 
-                            facecolor='red', alpha=0.3, edgecolor='k')
-    ax.add_patch(hex)
+    cube = Polygon([x, y] + cube_array, closed=True, 
+                    facecolor='red', alpha=0.3, edgecolor='k')
+    ax.add_patch(cube)
+    if not flag_show_number:
+        Hex_plot_cube_edges(x, y)
     dot = RegularPolygon((x, y), numVertices=20, radius=0.1, 
                             facecolor='black', alpha=1, edgecolor='k')
     ax.add_patch(dot)
@@ -188,12 +201,14 @@ def Hex_plot_current_candi(Hex_Map, pin_hex, Sol_candi):
         for hex in piece_form:
             x = hex.q + q_offset
             y = 2. * np.sin(np.radians(60)) * (hex.r + r_offset - hex.s - s_offset) /3.
-            hex = RegularPolygon((x, y), numVertices=6, radius=2. / 3., 
-                                orientation=np.radians(30), 
-                                facecolor=piece.color, alpha=0.3, edgecolor='k')
-            ax.add_patch(hex)
-            # Also add a text label
-            ax.text(x, y, str(Sol_candi[i][0]), ha='center', va='center', size=7)
+            cube = Polygon([x, y] + cube_array, closed=True, 
+                            facecolor=piece.color, alpha=0.3, edgecolor='k')
+            ax.add_patch(cube)
+            if not flag_show_number:
+                Hex_plot_cube_edges(x, y)
+            else:
+                # Also add a text label
+                ax.text(x, y, str(Sol_candi[i][0]), ha='center', va='center', size=7)
 
     ax.autoscale_view()
     plt.axis('off')
@@ -221,24 +236,26 @@ Puzzle_pieces = hex_pieces.generate_all_pieces()
 # Solver
 t0 = time.time()
 
-Sol_candi = [[0, 0, 3, 0, -3]]
-Candi_next = Sol_candi[0]
-this_piece = Puzzle_pieces[Candi_next[0]]
-this_piece_form = this_piece.form(Candi_next[1])
-q_offset = Candi_next[2]
-r_offset = Candi_next[3]
-s_offset = Candi_next[4]
-for k in range(5):
-    this_hex = this_piece_form[k]
-    q_in = this_hex.q + q_offset
-    r_in = this_hex.r + r_offset
-    s_in = this_hex.s + s_offset
-    found_match, success = Hex_find_and_set_grid_conditional(Hex_Map_Original_Copy, q_in, r_in, s_in, 1)
-
+# Sol_candi = [[0, 0, 3, 0, -3]]
+# Candi_next = Sol_candi[0]
+# this_piece = Puzzle_pieces[Candi_next[0]]
+# this_piece_form = this_piece.form(Candi_next[1])
+# q_offset = Candi_next[2]
+# r_offset = Candi_next[3]
+# s_offset = Candi_next[4]
+# for k in range(5):
+#     this_hex = this_piece_form[k]
+#     q_in = this_hex.q + q_offset
+#     r_in = this_hex.r + r_offset
+#     s_in = this_hex.s + s_offset
+#     found_match, success = Hex_find_and_set_grid_conditional(Hex_Map_Original_Copy, q_in, r_in, s_in, 1)
 # Sol = Hex_verify_candi_with_level(Hex_Map_Original_Copy, Puzzle_pieces, [[0, 0, 3, 0, -3]])
+
 # Sol = Hex_verify_candi_with_level(Hex_Map_Original_Copy, Puzzle_pieces, [])
 
+# Sol for pin_hex(0, 0, 0)
 Sol = [[0, 0, 3, 0, -3], [1, 0, -4, 2, 2], [2, 1, -1, 0, 1], [3, 1, 2, 2, -4], [4, 1, 1, 2, -3], [5, 0, 4, -3, -1], [6, 2, -2, 4, -2], [7, 1, 0, -3, 3], [8, 1, -1, -1, 2], [9, 2, 2, -3, 1], [10, 0, -3, 0, 3], [11, 1, -2, 3, -1]]
+
 Hex_plot_current_candi(Hex_Map, pin_hex, Sol)
 
 print("Time elapsed:", time.time() - t0, "s")
