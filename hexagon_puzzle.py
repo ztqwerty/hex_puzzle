@@ -109,9 +109,9 @@ def Hex_verify_candi_with_level(Map_copy, Puzzle_pieces, Candi):
                         continue
                     global _hex_global_ctr
                     _hex_global_ctr = _hex_global_ctr + 1
-                    # if _hex_global_ctr % 50 == 0:
+                    if _hex_global_ctr % 20 == 0:
                         # print(_hex_global_ctr)
-                    # Hex_plot_current_candi(Hex_Map_Original_Copy, pin_hex, Candi_out)
+                        Hex_plot_current_candi(Hex_Map_Original_Copy, pin_hex, Candi_out)
                     Hex_verify_candi_with_level(Map_out, Puzzle_pieces, Candi_out)
                 else:
                     # Found a solution! Return it
@@ -213,7 +213,7 @@ def Hex_plot_current_candi(Hex_Map, pin_hex, Sol_candi):
     ax.autoscale_view()
     plt.axis('off')
     plt.ion()
-    plt.show(block = True)
+    plt.show(block = False)
     plt.pause(0.001)
 
     # print("Time elapsed - Hex_plot_current_candi:", time.time()-t0)
@@ -227,7 +227,23 @@ Hex_Map = Hex_generate_map(SIZE_MAP)
 # pin_hex = libhex.Hex(0, 0, 0)
 # pin_hex = libhex.Hex(-1, 4, -3)
 # pin_hex = libhex.Hex(1, 3, -4)
-pin_hex = libhex.Hex(2, 1, -3)
+# pin_hex = libhex.Hex(2, 1, -3)
+# pin_hex = libhex.Hex(2, 0, -2)
+# pin_hex = libhex.Hex(-1, 0, 1) # Cannot find a solution ?!
+pin_hex = libhex.Hex(0, -3, 3)
+
+# SPOILERS!!!
+# Sol for pin_hex(0, 0, 0)
+# Sol = [[0, 0, 3, 0, -3], [1, 0, -4, 2, 2], [2, 1, -1, 0, 1], [3, 1, 2, 2, -4], [4, 1, 1, 2, -3], [5, 0, 4, -3, -1], [6, 2, -2, 4, -2], [7, 1, 0, -3, 3], [8, 1, -1, -1, 2], [9, 2, 2, -3, 1], [10, 0, -3, 0, 3], [11, 1, -2, 3, -1]]
+# Sol for pin_hex(-1, 4, -3)
+# Sol = [[0, 0, 0, 3, -3], [1, 2, 2, -4, 2], [2, 0, -3, 1, 2], [3, 0, -4, 4, 0], [4, 1, 4, -1, -3], [5, 1, -3, -1, 4], [6, 1, 0, -1, 1], [7, 0, 2, -1, -1], [8, 1, 2, 2, -4], [9, 2, -2, 2, 0], [10, 1, -1, -2, 3], [11, 0, 1, -1, 0]]
+# Sol for pin_hex(1, 3, -4)
+# Sol = [[0, 0, -3, 2, 1], [1, 2, 1, -4, 3], [2, 0, 2, -3, 1], [3, 0, -4, 4, 0], [4, 1, 1, 1, -2], [5, 1, -3, -1, 4], [6, 0, 0, -1, 1], [7, 2, -1, 0, 1], [8, 0, 3, -3, 0], [9, 0, 3, 0, -3], [10, 0, -1, 3, -2], [11, 1, 2, 2, -4]]
+# Sol for pin_hex(2, 1, -3)
+# Sol = [[0, 0, -3, 2, 1], [1, 1, 3, 1, -4], [2, 0, 0, 1, -1], [3, 0, -4, 4, 0], [4, 2, 0, -4, 4], [5, 0, 4, -3, -1], [6, 0, -2, 0, 2], [7, 0, 0, -1, 1], [8, 0, -1, -2, 3], [9, 2, 2, -3, 1], [10, 0, -1, 3, -2], [11, 0, 1, 1, -2]]
+# Sol for pin_hex(2, 0, -2)
+# Sol = [[0, 2, -3, 0, 3], [1, 2, 3, -4, 1], [2, 1, 0, 3, -3], [3, 1, 3, 1, -4], [4, 2, 0, -4, 4], [5, 0, 4, -2, -2], [6, 2, 1, -1, 0], [7, 1, 0, -2, 2], [8, 2, 1, 0, -1], [9, 2, -4, 3, 1], [10, 0, -2, 3, -1], [11, 2, -1, 1, 0]]
+# Hex_plot_current_candi(Hex_Map, pin_hex, Sol)
 
 # Set pin hex in grid map to be occupied
 found_match, val_set_success = Hex_find_and_set_grid_conditional(Hex_Map, pin_hex.q, pin_hex.r, pin_hex.s, 1)
@@ -240,15 +256,6 @@ Puzzle_pieces = hex_pieces.generate_all_pieces()
 # Solver
 # t0 = time.time()
 Sol = Hex_verify_candi_with_level(Hex_Map_Original_Copy, Puzzle_pieces, [])
-
-# SPOILERS!!!
-# Sol for pin_hex(0, 0, 0)
-# Sol = [[0, 0, 3, 0, -3], [1, 0, -4, 2, 2], [2, 1, -1, 0, 1], [3, 1, 2, 2, -4], [4, 1, 1, 2, -3], [5, 0, 4, -3, -1], [6, 2, -2, 4, -2], [7, 1, 0, -3, 3], [8, 1, -1, -1, 2], [9, 2, 2, -3, 1], [10, 0, -3, 0, 3], [11, 1, -2, 3, -1]]
-# Sol for pin_hex(-1, 4, -3)
-# Sol = [[0, 0, 0, 3, -3], [1, 2, 2, -4, 2], [2, 0, -3, 1, 2], [3, 0, -4, 4, 0], [4, 1, 4, -1, -3], [5, 1, -3, -1, 4], [6, 1, 0, -1, 1], [7, 0, 2, -1, -1], [8, 1, 2, 2, -4], [9, 2, -2, 2, 0], [10, 1, -1, -2, 3], [11, 0, 1, -1, 0]]
-# Sol for pin_hex(1, 3, -4)
-# Sol = [[0, 0, -3, 2, 1], [1, 2, 1, -4, 3], [2, 0, 2, -3, 1], [3, 0, -4, 4, 0], [4, 1, 1, 1, -2], [5, 1, -3, -1, 4], [6, 0, 0, -1, 1], [7, 2, -1, 0, 1], [8, 0, 3, -3, 0], [9, 0, 3, 0, -3], [10, 0, -1, 3, -2], [11, 1, 2, 2, -4]]
-# Hex_plot_current_candi(Hex_Map, pin_hex, Sol)
 # print("Time elapsed:", time.time() - t0, "s")
 
 
