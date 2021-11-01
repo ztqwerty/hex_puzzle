@@ -143,3 +143,6 @@ def generate_all_pieces():
     Puzzle_pieces.append(Piece_11)
 
     return Puzzle_pieces
+
+
+## END OF CODE
