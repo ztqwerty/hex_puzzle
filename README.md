@@ -1,5 +1,5 @@
 # Escher Cubes Solver
-Auther: Tong Zhang (ztqwerty)  
+Author: Tong Zhang (ztqwerty)  
 Date: Nov.1, 2021
 
 ### Intro
